@@ -10,7 +10,7 @@ pub struct Fr(FrRepr);
 
 mod constants;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Constants {
     pub c: Vec<Vec<Fr>>,
     pub m: Vec<Vec<Vec<Fr>>>,
@@ -51,6 +51,7 @@ pub fn load_constants() -> Constants {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Poseidon {
     constants: Constants,
 }

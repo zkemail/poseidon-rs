@@ -1,3 +1,46 @@
+use crate::Fr;
+use ff::*;
+
+#[derive(Debug, Clone)]
+pub struct Constants {
+    pub c: Vec<Vec<Fr>>,
+    pub m: Vec<Vec<Vec<Fr>>>,
+    pub n_rounds_f: usize,
+    pub n_rounds_p: Vec<usize>,
+}
+pub fn load_constants() -> Constants {
+    let (c_str, m_str) = constants();
+    let mut c: Vec<Vec<Fr>> = Vec::new();
+    for i in 0..c_str.len() {
+        let mut cci: Vec<Fr> = Vec::new();
+        for j in 0..c_str[i].len() {
+            let b: Fr = Fr::from_str_vartime(c_str[i][j]).unwrap();
+            cci.push(b);
+        }
+        c.push(cci);
+    }
+    let mut m: Vec<Vec<Vec<Fr>>> = Vec::new();
+    for i in 0..m_str.len() {
+        let mut mi: Vec<Vec<Fr>> = Vec::new();
+        for j in 0..m_str[i].len() {
+            let mut mij: Vec<Fr> = Vec::new();
+            for k in 0..m_str[i][j].len() {
+                let b: Fr = Fr::from_str_vartime(m_str[i][j][k]).unwrap();
+                mij.push(b);
+            }
+            mi.push(mij);
+        }
+        m.push(mi);
+    }
+    Constants {
+        c,
+        m,
+        n_rounds_f: 8,
+        n_rounds_p: vec![
+            56, 57, 56, 60, 60, 63, 64, 63, 60, 66, 60, 65, 70, 60, 64, 68,
+        ],
+    }
+}
 pub fn constants() -> (Vec<Vec<&'static str>>, Vec<Vec<Vec<&'static str>>>) {
     let c_str: Vec<Vec<&str>> = vec![
         vec![

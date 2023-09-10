@@ -7,11 +7,11 @@ use ff::*;
 use poseidon_rs::{Fr, Poseidon};
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let b1: Fr = Fr::from_str(
+    let b1: Fr = Fr::from_str_vartime(
         "12242166908188651009877250812424843524687801523336557272219921456462821518061",
     )
     .unwrap();
-    let b2: Fr = Fr::from_str(
+    let b2: Fr = Fr::from_str_vartime(
         "12242166908188651009877250812424843524687801523336557272219921456462821518061",
     )
     .unwrap();

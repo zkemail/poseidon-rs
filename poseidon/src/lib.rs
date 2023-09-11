@@ -1,6 +1,7 @@
 pub mod constants;
 pub mod poseidon;
 use ff::*;
+pub use halo2curves::bn256::Fr;
 use once_cell::sync::OnceCell;
 pub use poseidon::*;
 
@@ -14,20 +15,21 @@ pub fn poseidon_bytes(input_bytes: &[u8]) -> Result<Fr, PoseidonError> {
         .into_iter()
         .map(|b| Fr::from_u128(*b as u128))
         .collect::<Vec<_>>();
-    compose_and_poseidon(&input_fields, 31)
+    compose_and_poseidon(&input_fields, 31, 8)
 }
 
 pub fn compose_and_poseidon(
     input_fields: &[Fr],
-    num_composed_fields: usize,
+    num_composed_chunks: usize,
+    bits_of_chunk: u128,
 ) -> Result<Fr, PoseidonError> {
     let mut composed_fields = Vec::new();
-    for fields in input_fields.chunks(num_composed_fields) {
+    for fields in input_fields.chunks(num_composed_chunks) {
         let mut sum = Fr::ZERO;
         let mut coeff = Fr::ONE;
         for field in fields.into_iter() {
             sum += *field * coeff;
-            coeff *= Fr::from_u128(2);
+            coeff *= Fr::from_u128(1u128 << bits_of_chunk);
         }
         composed_fields.push(sum);
     }
@@ -42,14 +44,12 @@ fn poseidon_default() -> &'static Poseidon {
         .expect("Fail to init Poseidon")
 }
 
-// use serde::{Deserialize, Serialize};
-
-// BN254 Scalar Field F_r
-#[derive(PrimeField)]
-#[PrimeFieldModulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
-#[PrimeFieldGenerator = "7"]
-#[PrimeFieldReprEndianness = "little"]
-pub struct Fr([u64; 4]);
+// // BN254 Scalar Field F_r
+// #[derive(PrimeField)]
+// #[PrimeFieldModulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
+// #[PrimeFieldGenerator = "7"]
+// #[PrimeFieldReprEndianness = "little"]
+// pub struct Fr([u64; 4]);
 
 #[cfg(test)]
 mod tests {
@@ -284,5 +284,23 @@ mod tests {
             b1, b2, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0, b0,
         ];
         poseidon_fields(&big_arr).expect_err("Wrong inputs length");
+    }
+
+    #[test]
+    fn test_compose_poseidon() {
+        let b0: Fr = Fr::from_str_vartime("0").unwrap();
+        let b1: Fr = Fr::from_str_vartime("1").unwrap();
+        let b2: Fr = Fr::from_str_vartime("2").unwrap();
+        let b3: Fr = Fr::from_str_vartime("3").unwrap();
+        let b4: Fr = Fr::from_str_vartime("4").unwrap();
+        let b5: Fr = Fr::from_str_vartime("5").unwrap();
+
+        let u256: Fr = Fr::from_str_vartime("256").unwrap();
+        let b01 = b0 + u256 * b1;
+        let b02 = b2 + u256 * b3;
+        let b03 = b4 + u256 * b5;
+        let hash_direct = poseidon_fields(&[b01, b02, b03]).unwrap();
+        let hash_composed = compose_and_poseidon(&[b0, b1, b2, b3, b4, b5], 2, 8).unwrap();
+        assert_eq!(hash_direct, hash_composed);
     }
 }

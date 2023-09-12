@@ -2,6 +2,7 @@ use halo2curves::serde::SerdeObject;
 use hex;
 use neon::prelude::*;
 use poseidon_rs::{compose_and_poseidon, poseidon_bytes, poseidon_fields, Fr};
+use std::convert::TryInto;
 
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
@@ -19,7 +20,7 @@ fn poseidon_fields_node(mut cx: FunctionContext) -> JsResult<JsString> {
     let inputs = strs_to_fields(&mut cx, &input_strs)?;
     match poseidon_fields(&inputs) {
         Ok(result) => {
-            let result_str = "0x".to_string() + &hex::encode(result.to_raw_bytes());
+            let result_str = field2str(&result);
             Ok(cx.string(result_str))
         }
         Err(e) => return cx.throw_error(&format!("poseidon_fields failed: {}", e)),
@@ -40,7 +41,7 @@ fn poseidon_bytes_node(mut cx: FunctionContext) -> JsResult<JsString> {
     };
     match poseidon_bytes(&bytes) {
         Ok(result) => {
-            let result_str = "0x".to_string() + &hex::encode(result.to_raw_bytes());
+            let result_str = field2str(&result);
             Ok(cx.string(result_str))
         }
         Err(e) => return cx.throw_error(&format!("poseidon_bytes failed: {}", e)),
@@ -59,7 +60,7 @@ fn compose_and_poseidon_node(mut cx: FunctionContext) -> JsResult<JsString> {
     let inputs = strs_to_fields(&mut cx, &input_strs)?;
     match compose_and_poseidon(&inputs, num_composed_chunks, bits_of_chunk) {
         Ok(result) => {
-            let result_str = "0x".to_string() + &hex::encode(result.to_raw_bytes());
+            let result_str = field2str(&result);
             Ok(cx.string(result_str))
         }
         Err(e) => return cx.throw_error(&format!("compose_and_poseidon failed: {}", e)),
@@ -72,25 +73,39 @@ fn strs_to_fields(cx: &mut FunctionContext, array: &JsArray) -> NeonResult<Vec<F
     for idx in 0..len {
         // 0x + 64 hex chars (32 bytes)
         let hex_str = array.get::<JsString, _, _>(cx, idx)?.value(cx);
-        if &hex_str[0..2] != "0x" {
-            return cx.throw_error(&format!(
-                "the {}-th input must be hex string with 0x prefix",
-                idx
-            ));
-        }
-        let mut bytes = match hex::decode(&hex_str[2..]) {
-            Ok(bytes) => bytes,
-            Err(e) => {
-                return cx.throw_error(&format!("the {}-th input is invalid hex: {}", idx, e))
-            }
-        };
-        if bytes.len() < 32 {
-            bytes.append(&mut vec![0; 32 - bytes.len()]);
-        } else if bytes.len() > 32 {
-            return cx.throw_error(&format!("the {}-th input must be 32 bytes", idx));
-        }
-        let field = Fr::from_raw_bytes(&bytes).unwrap();
+        let field = str2field(cx, &hex_str)?;
         fields.push(field);
     }
     Ok(fields)
+}
+
+fn str2field(cx: &mut FunctionContext, input_strs: &str) -> NeonResult<Fr> {
+    if &input_strs[0..2] != "0x" {
+        return cx.throw_error(&format!(
+            "the input string {} must be hex string with 0x prefix",
+            &input_strs
+        ));
+    }
+    let mut bytes = match hex::decode(&input_strs[2..]) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            return cx.throw_error(&format!(
+                "the input string {} is invalid hex: {}",
+                &input_strs, e
+            ))
+        }
+    };
+    bytes.reverse();
+    if bytes.len() != 32 {
+        return cx.throw_error(&format!(
+            "the input string {} must be 32 bytes but is {} bytes",
+            &input_strs,
+            bytes.len()
+        ));
+    }
+    Ok(Fr::from_bytes(&bytes.try_into().unwrap()).unwrap())
+}
+
+fn field2str(field: &Fr) -> String {
+    format!("{:?}", field)
 }

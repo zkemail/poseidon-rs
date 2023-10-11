@@ -15,13 +15,22 @@ ff = { version = "0.13.0", default-features = false, features = [
     "derive",
 ] }
 halo2curves = { version = "0.4.0", git = "https://github.com/privacy-scaling-explorations/halo2curves.git" }
-rand = "0.8.5"
+rand = { version = "0.8.5", default-features = false }
 once_cell = "1.18.0"
 thiserror = "1.0.43"
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }
 
 
 [dev-dependencies]
 criterion = "0.3"
+
+[features]
+default = ["rand/default"]
+
+[target.'cfg(target_family = "wasm")'.features]
+default = []
 
 [[bench]]
 name = "bench_poseidon_hash"

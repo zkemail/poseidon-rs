@@ -1,6 +1,6 @@
 use crate::constants::*;
 use crate::Fr;
-use ff::*;
+use halo2curves::ff::*;
 use std::ops::{AddAssign, MulAssign};
 use thiserror::Error;
 

@@ -1,8 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-#[macro_use]
-extern crate ff;
-use ff::*;
+use halo2curves::ff::*;
 
 use poseidon_rs::{Fr, Poseidon};
 

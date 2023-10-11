@@ -1,7 +1,7 @@
 pub mod constants;
 pub mod poseidon;
-use ff::*;
 pub use halo2curves::bn256::Fr;
+use halo2curves::ff::*;
 use once_cell::sync::OnceCell;
 pub use poseidon::*;
 

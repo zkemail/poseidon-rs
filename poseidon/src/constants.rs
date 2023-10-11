@@ -1,5 +1,5 @@
 use crate::Fr;
-use ff::*;
+use halo2curves::ff::*;
 
 #[derive(Debug, Clone)]
 pub struct Constants {

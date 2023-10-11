@@ -44,14 +44,14 @@ fn poseidon_default() -> &'static Poseidon {
         .expect("Fail to init Poseidon")
 }
 
-#[cfg(target = "wasm32")]
-use getrandom;
-#[cfg(target = "wasm32")]
-getrandom::register_custom_getrandom!(always_fail);
-#[cfg(target = "wasm32")]
-pub fn always_fail(_buf: &mut [u8]) -> Result<(), getrandom::Error> {
-    Err(getrandom::Error::UNSUPPORTED)
-}
+// #[cfg(target = "wasm32")]
+// use getrandom;
+// #[cfg(target = "wasm32")]
+// getrandom::register_custom_getrandom!(always_fail);
+// #[cfg(target = "wasm32")]
+// pub fn always_fail(_buf: &mut [u8]) -> Result<(), getrandom::Error> {
+//     Err(getrandom::Error::UNSUPPORTED)
+// }
 
 // // BN254 Scalar Field F_r
 // #[derive(PrimeField)]

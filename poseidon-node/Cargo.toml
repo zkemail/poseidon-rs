@@ -1,6 +1,6 @@
 [package]
 name = "poseidon-node"
-version = "0.1.1"
+version = "1.0.0"
 authors = ["Sora Suegami"]
 license = "MIT"
 edition = "2018"
@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 poseidon-rs = { path = "../poseidon" }
-halo2curves = { version = "0.7.0", git = "https://github.com/privacy-scaling-explorations/halo2curves.git", ref = "8771fe5a5d54fc03e74dbc8915db5dad3ab46a83" }
+halo2curves = { version = "0.7.0", git = "https://github.com/privacy-scaling-explorations/halo2curves.git", default-features = false, rev = "8771fe5a5d54fc03e74dbc8915db5dad3ab46a83" }
 hex = "0.4.3"
 
 [dependencies.neon]

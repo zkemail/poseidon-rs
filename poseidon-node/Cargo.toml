@@ -15,6 +15,7 @@ crate-type = ["cdylib"]
 poseidon-rs = { path = "../poseidon" }
 halo2curves = { version = "0.7.0", git = "https://github.com/privacy-scaling-explorations/halo2curves.git", default-features = false, rev = "8771fe5a5d54fc03e74dbc8915db5dad3ab46a83" }
 hex = "0.4.3"
+ff = { version = "0.13.0", default-features = false }
 
 [dependencies.neon]
 version = "0.10"
